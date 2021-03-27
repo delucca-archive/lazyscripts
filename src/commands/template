@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+
+# REQUIRED DEPENDENCIES
+# -------------------------------------------------------------------------------------------------
+#
+# To run this script, you must have the following tools installed:
+# - bash 4
+# - <other dependencies for this script>
+
+# Imports
+# -------------------------------------------------------------------------------------------------
+
+source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/spinner.sh)
+source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/log.sh)
+source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/handlers.sh)
+
+# Global variables
+# -------------------------------------------------------------------------------------------------
+
+A_FLAG=false
+
+# Entrypoint
+# -------------------------------------------------------------------------------------------------
+
+function main {
+  parse_args $@
+
+  validate_requirements
+  do_work
+}
+
+# Validate
+# -------------------------------------------------------------------------------------------------
+
+function validate_requirements {
+  validate_dependencies
+}
+
+function validate_dependencies {
+  validate_bash_dependency
+}
+
+function validate_bash_dependency {
+  major_version="$(bash --version | head -1 | cut -d ' ' -f 4 | cut -d '.' -f 1)"
+  min_major_version="4"
+
+  if [ "${major_version}" -lt "${min_major_version}" ]; then
+    throw_error "Your bash major version must be ${min_major_version} or greater"
+  fi
+}
+
+# Parse args
+# -------------------------------------------------------------------------------------------------
+
+function parse_args {
+  for opt in "$@"; do
+    case $opt in
+      --help)
+        help
+        exit 0
+        ;;
+      --a-flag) A_FLAG=true ;;
+      *)
+        echo "unknown option: $opt"
+        help
+        exit 1
+        ;;
+    esac
+  done
+}
+
+# Do work
+# -------------------------------------------------------------------------------------------------
+
+function do_work {
+  if [ "${SHELL_TOOLS}" = true ]; then
+    log_title "DOING WORK"
+
+    some_work
+  fi
+}
+
+function some_work {
+  start_spinner_in_category 'work' 'Doing some work'
+
+  echo "Work is being done" > /dev/null
+
+  stop_spinner $?
+}
+
+# Helpers
+# -------------------------------------------------------------------------------------------------
+
+function help {
+  cat << EOF
+Here you can describe what your script does
+
+usage: $0 [OPTIONS]
+    --help      Show this message
+    --a-flag    Here you can describe what this flag does
+EOF
+}
+
+# Execute
+# -------------------------------------------------------------------------------------------------
+
+main $@
