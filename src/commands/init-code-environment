@@ -156,7 +156,7 @@ function prepare {
 function prepare_debian {
   start_spinner_in_category 'Prepare' 'Updating your apt repositories'
 
-  sudo apt-get update > /dev/null
+  sudo apt-get update -y > /dev/null
 
   stop_spinner $?
 }
@@ -209,7 +209,7 @@ function install_zsh {
 function install_zsh_debian {
   start_spinner_in_category 'zsh' 'Installing'
 
-  sudo apt-get install zsh > /dev/null
+  sudo apt-get install zsh -y > /dev/null
 
   stop_spinner $?
 }
@@ -234,7 +234,7 @@ function install_xclip {
 function install_xclip_debian {
   start_spinner_in_category 'xclip' 'Installing'
 
-  sudo apt-get install xclip > /dev/null
+  sudo apt-get install xclip -y > /dev/null
 
   stop_spinner $?
 }
@@ -266,7 +266,7 @@ function install_ack {
 function install_ack_debian {
   start_spinner_in_category 'ack' 'Installing'
 
-  sudo apt-get install ack-grep > /dev/null
+  sudo apt-get install ack-grep -y > /dev/null
 
   stop_spinner $?
 
@@ -301,7 +301,7 @@ function install_jq {
 function install_jq_debian {
   start_spinner_in_category 'jq' 'Installing'
 
-  sudo apt-get install jq > /dev/null
+  sudo apt-get install jq -y > /dev/null
 
   stop_spinner $?
 }
@@ -318,7 +318,7 @@ function install_tree {
 function install_tree_debian {
   start_spinner_in_category 'jq' 'Installing'
 
-  sudo apt-get install tree > /dev/null
+  sudo apt-get install tree -y > /dev/null
 
   stop_spinner $?
 }
@@ -351,7 +351,7 @@ function install_ag {
 function install_ag_debian {
   start_spinner_in_category 'ag' 'Installing'
 
-  sudo apt-get install silversearcher-ag > /dev/null
+  sudo apt-get install silversearcher-ag -y > /dev/null
   
   stop_spinner $?
 }
@@ -420,7 +420,7 @@ function install_keychain {
 function install_keychain_debian {
   start_spinner_in_category 'keychain' 'Installing'
 
-  sudo apt-get install keychain > /dev/null
+  sudo apt-get install keychain -y > /dev/null
 
   stop_spinner $?
 }
@@ -440,7 +440,7 @@ function install_tmux {
 function install_tmux_debian {
   start_spinner_in_category 'tmux' 'Installing'
 
-  sudo apt-get install tmux > /dev/null
+  sudo apt-get install tmux -y > /dev/null
 
   stop_spinner $?
 }
@@ -456,7 +456,7 @@ function install_tpm {
 function install_tmuxinator {
   start_spinner_in_category 'tmuxinator' 'Installing rubygems'
 
-  sudo apt-get install rubygems > /dev/null
+  sudo apt-get install rubygems -y > /dev/null
 
   stop_spinner $?
   start_spinner_in_category 'tmuxinator' 'Installing'
@@ -541,7 +541,7 @@ function install_latest_git_debian {
 
   start_spinner_in_category 'git' 'Updating repositories'
 
-  sudo apt-get update > /dev/null
+  sudo apt-get update -y > /dev/null
 
   stop_spinner $?
   start_spinner_in_category 'git' 'Installing latest version'
