@@ -137,7 +137,7 @@ function prepare {
 function prepare_debian {
   start_spinner_in_category 'Prepare' 'Updating your apt repositories'
 
-  sudo apt-get update -y > /dev/null
+  sudo apt-get -y update &> /dev/null
 
   stop_spinner $?
 }

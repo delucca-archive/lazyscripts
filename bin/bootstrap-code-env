@@ -165,7 +165,6 @@ function install_dotfiles {
   if [ "${DOTFILES}" = true ]; then
     log_title "DOTFILES"
     minimal_opt=$(build_minimal_opt)
-    echo $minimal_opt
 
     source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles") $minimal_opt
   fi

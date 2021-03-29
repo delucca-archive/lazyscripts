@@ -106,7 +106,7 @@ function setup_dotfiles {
 }
 
 function add_symlinks {
-  dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
+  dotfile=$([ "${MINIMAL}" = true ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
 
   ln -s "${dotfile}" "${HOME}/.freshrc"
 }

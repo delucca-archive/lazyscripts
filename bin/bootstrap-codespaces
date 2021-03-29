@@ -16,9 +16,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
-REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
+IMPORT_COMMAND=${IMPORT_COMMAND:-"cat"}
+REPOSITORY_URL=${REPOSITORY_URL:-"/workspaces"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"lazyscripts"}
 
 source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
