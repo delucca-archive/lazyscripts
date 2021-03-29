@@ -158,7 +158,6 @@ function install_minimal {
   install_starship
   install_zsh
   install_zinit
-  install_zsh_plugins
 }
 
 function install_xclip {
@@ -260,13 +259,17 @@ function install_keychain_debian {
 }
 
 function install_starship {
-  pushd /tmp > /dev/null
+  start_spinner_in_category 'starship' 'Downloading installation script'
 
-  curl -fsSL https://starship.rs/install.sh -Lso "starship_install.sh"
-  chmod +x "./starship_install.sh"
-  ./starship_install.sh -y
+  curl -fsSL https://starship.rs/install.sh -Lso "/tmp/starship_install.sh"
+  chmod +x "/tmp/starship_install.sh"
+  
+  stop_spinner $?
+  start_spinner_in_category 'starship' 'Downloading installation script'
+  
+  /tmp/starship_install.sh -y > /dev/null
 
-  popd > /dev/null
+  stop_spinner $?
 }
 
 function install_zsh {
@@ -295,10 +298,6 @@ function install_zinit {
   git clone --quiet https://github.com/zdharma/zinit.git "${HOME}/.zinit/bin" > /dev/null
 
   stop_spinner $?
-}
-
-function install_zsh_plugins {
-  zsh -ic "@zinit-scheduler burst"
 }
 
 # Install full
