@@ -151,7 +151,12 @@ function start_ssh_agent {
 function install_code_environment {
   log_title "CODE ENVIRONMENT"
 
+  clear_previous_configs
   execute_install_code_environment_script
+}
+
+function clear_previous_configs {
+  rm -f "${HOME}/.zshrc"
 }
 
 function execute_install_code_environment_script {
