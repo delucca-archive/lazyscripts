@@ -155,7 +155,7 @@ function install_code_environment {
 }
 
 function execute_install_code_environment_script {
-  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --complete --minimal
+  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --shell-tools --dotfiles --minimal
 }
 
 # Helpers

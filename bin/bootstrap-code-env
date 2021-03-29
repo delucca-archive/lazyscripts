@@ -48,7 +48,6 @@ DOTFILES=false
 function main {
   parse_args $@
   validate_requirements
-  prepare
 
   install_shell_tools
   install_dev_tools
@@ -135,28 +134,6 @@ function validate_dependencies {
   validate_bash_dependency
 }
 
-# Prepare
-# -------------------------------------------------------------------------------------------------
-
-function prepare {
-  update_su_timestamp
-
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) prepare_debian;;
-    ${DISTRO_DEBIAN}) prepare_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a prepare function for your distro: ${DISTRO}"
-  esac
-}
-
-function prepare_debian {
-  start_spinner_in_category 'Prepare' 'Updating your apt repositories'
-
-  sudo apt-get update -y > /dev/null
-
-  stop_spinner $?
-}
-
 # Install shell tools
 # -------------------------------------------------------------------------------------------------
 
@@ -188,6 +165,7 @@ function install_dotfiles {
   if [ "${DOTFILES}" = true ]; then
     log_title "DOTFILES"
     minimal_opt=$(build_minimal_opt)
+    echo $minimal_opt
 
     source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles") $minimal_opt
   fi
