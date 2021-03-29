@@ -155,6 +155,7 @@ function install_minimal {
   install_tree
   install_ripgrep
   install_keychain
+  install_starship
   install_zsh
   install_zinit
   install_zsh_plugins
@@ -256,6 +257,16 @@ function install_keychain_debian {
   sudo apt-get install keychain -y > /dev/null
 
   stop_spinner $?
+}
+
+function install_starship {
+  pushd /tmp > /dev/null
+
+  curl -fsSL https://starship.rs/install.sh -Lso "starship_install.sh"
+  chmod +x "./starship_install.sh"
+  ./starship_install.sh -y
+
+  popd > /dev/null
 }
 
 function install_zsh {
