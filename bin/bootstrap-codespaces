@@ -20,10 +20,10 @@ IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
 REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
-source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
-source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
-source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
+source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
 
 # Entrypoint
 # -------------------------------------------------------------------------------------------------
@@ -155,7 +155,7 @@ function install_code_environment {
 }
 
 function execute_install_code_environment_script {
-  echo "ok"
+  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --complete --minimal
 }
 
 # Helpers

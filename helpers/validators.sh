@@ -7,7 +7,7 @@ IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
 REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
-source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
 
 # Helpers
 # -------------------------------------------------------------------------------------------------
