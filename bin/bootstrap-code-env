@@ -20,7 +20,7 @@
 # -------------------------------------------------------------------------------------------------
 
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"feature/init-code-environment"}
 
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
@@ -258,13 +258,6 @@ function sync_dotfiles {
 
 # Helpers
 # -------------------------------------------------------------------------------------------------
-
-function update_su_timestamp {
-  sudo -k
-  sudo -v
-
-  echo
-}
 
 function help {
   cat << EOF

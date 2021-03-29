@@ -3,7 +3,10 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-source <(curl -s https://raw.githubusercontent.com/tlatsas/bash-spinner/master/spinner.sh)
+REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
+
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 
 # Helpers
 # -------------------------------------------------------------------------------------------------
