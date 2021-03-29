@@ -91,7 +91,7 @@ function clear_previous_installation {
 function clone_dotfiles_repository {
   start_spinner_in_category 'repository' 'Cloning dotfiles'
 
-  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfiles" > /dev/null
+  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfiles" &> /dev/null
 
   stop_spinner $?
 }
