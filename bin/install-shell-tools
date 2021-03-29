@@ -278,7 +278,10 @@ function install_zsh_debian {
 function install_zinit {
   start_spinner_in_category 'zinit' 'Installing'
 
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)" &> /dev/null
+  rm -rf "${HOME}/.zinit" || true
+  mkdir "${HOME}/.zinit"
+
+  git clone --quiet https://github.com/zdharma/zinit.git "${HOME}/.zinit/bin" > /dev/null
 
   stop_spinner $?
 }
