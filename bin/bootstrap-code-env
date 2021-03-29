@@ -20,7 +20,7 @@
 # -------------------------------------------------------------------------------------------------
 
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"feature/init-code-environment"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
