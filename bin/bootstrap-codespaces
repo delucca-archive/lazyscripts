@@ -30,10 +30,11 @@ source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helper
 
 function main {
   parse_args $@
-
   validate_requirements
-  setup_ssh_credentials
-  install_code_environment
+  
+  pre_setup
+  setup
+  post_setup
 }
 
 # Parse args
@@ -66,12 +67,16 @@ function validate_dependencies {
   validate_bash_dependency
 }
 
-# Setup SSH credentials
+# Pre setup
 # -------------------------------------------------------------------------------------------------
 
-function setup_ssh_credentials {
+function pre_setup {
   log_title "SSH CREDENTIALS"
+  
+  setup_ssh_credentials
+}
 
+function setup_ssh_credentials {
   ensure_ssh_dir
   trust_github_hosts
   setup_ssh_private_key
@@ -148,11 +153,12 @@ function start_ssh_agent {
 # Install code environment
 # -------------------------------------------------------------------------------------------------
 
-function install_code_environment {
-  log_title "CODE ENVIRONMENT"
+function setup {
+  log_title "SETUP"
 
   clear_previous_configs
   execute_install_code_environment_script
+  post_code_env_installation
 }
 
 function clear_previous_configs {
@@ -161,6 +167,23 @@ function clear_previous_configs {
 
 function execute_install_code_environment_script {
   source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --shell-tools --dotfiles --minimal
+}
+
+# Install code environment
+# -------------------------------------------------------------------------------------------------
+
+function post_setup {
+  log_title "POST SETUP"
+
+  install_zsh_plugins
+}
+  
+function install_zsh_plugins {
+  start_spinner_in_category 'zinit' 'Install plugins'
+  
+  zsh -ic "@zinit-scheduler burst" > /dev/null
+  
+  stop_spinner $?
 }
 
 # Helpers
