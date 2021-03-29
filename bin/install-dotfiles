@@ -67,6 +67,7 @@ function validate_dependencies {
 
 function prepare {
   install_dotfiles_manager
+  clear_previous_installation
   clone_dotfiles_repository
 }
 
@@ -74,6 +75,15 @@ function install_dotfiles_manager {
   start_spinner_in_category 'fresh' 'Installing'
 
   bash -c "`curl -sL https://get.freshshell.com`" > /dev/null
+
+  stop_spinner $?
+}
+
+function clear_previous_installation {
+  start_spinner_in_category 'clear' 'Removing previous installations'
+
+  rm -rf "${HOME}/.dotfiles"
+  sudo rm -f "${HOME}/.freshrc"
 
   stop_spinner $?
 }
@@ -96,11 +106,17 @@ function setup_dotfiles {
 
 function add_symlinks {
   dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
-  echo $dotfile
+
+  ln -s "${dotfile}" "${HOME}/.freshrc"
 }
 
 function sync_dotfiles {
-  echo "ok"
+  start_spinner_in_category 'repository' 'Cloning dotfiles'
+
+  source "${HOME}/.fresh/build/shell.sh"
+  fresh
+
+  stop_spinner $?
 }
 
 # Helpers

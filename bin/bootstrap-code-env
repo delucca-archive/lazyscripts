@@ -185,16 +185,8 @@ function install_dotfiles {
   if [ "${DOTFILES}" = true ]; then
     log_title "DOTFILES"
 
-    install_dotfiles_manager
-    clone_dotfiles_repository
-    sync_dotfiles
+    source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles")
   fi
-}
-
-
-function sync_dotfiles {
-  dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
-  echo $dotfile
 }
 
 # Helpers
