@@ -18,10 +18,10 @@ As any developer, I have a bunch of routine tasks that I need to do. Some of tho
 
 ## 🧙‍♂️ Quickstart
 
-Using this repository is as simple as executing any binary file inside the `src/commands` folder. For example, you can execute the `init-code-environment` script with the following command:
+Using this repository is as simple as executing any binary file inside the `bin` folder. For example, you can execute the `bootstrap-code-env` script with the following command:
 
 ```sh
-./src/commands/init-code-environment
+./bin/bootstrap-code-env
 ```
 
 ## 👩‍🔬 Usage
@@ -30,7 +30,7 @@ Each script contains a `--help` argument. If you provide that argument while run
 
 For example:
 ```sh
-> ./src/commands/init-code-environment --help
+> ./bin/bootstrap-code-env --help
 Bootstraps my code environment on the current machine by installing all required tools and dotfiles.
 
 usage: ./src/commands/init-code-environment [OPTIONS]	 

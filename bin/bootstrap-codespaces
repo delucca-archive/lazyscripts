@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+
+# REQUIRED DEPENDENCIES
+# -------------------------------------------------------------------------------------------------
+#
+# To run this script, you must have the following tools installed:
+# - bash 4
+#
+# REQUIRED ENVIRONMENT VARIABLE
+# -------------------------------------------------------------------------------------------------
+#
+# Here is the list of required environment variable for this script:
+# - SSH_PRIVATE_KEY
+# - SSH_PUBLIC_KEY
+
+# Imports
+# -------------------------------------------------------------------------------------------------
+
+IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
+REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
+
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+
+# Entrypoint
+# -------------------------------------------------------------------------------------------------
+
+function main {
+  parse_args $@
+
+  validate_requirements
+  setup_ssh_credentials
+  install_code_environment
+}
+
+# Parse args
+# -------------------------------------------------------------------------------------------------
+
+function parse_args {
+  for opt in "$@"; do
+    case $opt in
+      --help)
+        help
+        exit 0
+        ;;
+      *)
+        echo "unknown option: $opt"
+        help
+        exit 1
+        ;;
+    esac
+  done
+}
+
+# Validate
+# -------------------------------------------------------------------------------------------------
+
+function validate_requirements {
+  validate_dependencies
+}
+
+function validate_dependencies {
+  validate_bash_dependency
+}
+
+# Setup SSH credentials
+# -------------------------------------------------------------------------------------------------
+
+function setup_ssh_credentials {
+  log_title "SSH CREDENTIALS"
+
+  ensure_ssh_dir
+  trust_github_hosts
+  setup_ssh_private_key
+  setup_ssh_public_key
+  setup_ssh_config
+  start_ssh_agent
+}
+
+function ensure_ssh_dir {
+  start_spinner_in_category 'ssh' 'Ensuring SSH dir'
+
+  mkdir -p "${HOME}/.ssh" > /dev/null
+
+  stop_spinner $?
+}
+
+function trust_github_hosts {
+  start_spinner_in_category 'ssh' 'Trusting all Github hosts'
+
+  ssh-keyscan "github.com" >> "${HOME}/.ssh/known_hosts" 2> /dev/null
+
+  stop_spinner $?
+}
+
+function setup_ssh_private_key {
+  start_spinner_in_category 'ssh' 'Install private key'
+
+  private_key_file_path="${HOME}/.ssh/id"
+
+  touch "${private_key_file_path}"
+  chmod 600 "${private_key_file_path}"
+  echo "${SSH_PRIVATE_KEY}" > $private_key_file_path
+
+  stop_spinner $?
+}
+
+function setup_ssh_public_key {
+  start_spinner_in_category 'ssh' 'Install public key'
+
+  public_key_file_path="${HOME}/.ssh/id.pub"
+
+  touch "${public_key_file_path}"
+  chmod 600 "${public_key_file_path}"
+  echo "${SSH_PUBLIC_KEY}" > $public_key_file_path
+
+  stop_spinner $?
+}
+
+function setup_ssh_config {
+  start_spinner_in_category 'ssh' 'Applying configs'
+
+  ssh_config_file_path="${HOME}/.ssh/config"
+  
+  touch $ssh_config_file_path > /dev/null
+  chmod 600 $ssh_config_file_path /dev/null
+  cat<<EOF >$ssh_config_file_path
+Host github.com
+  User delucca
+  IdentityFile ~/.ssh/id
+EOF
+
+  stop_spinner $?
+}
+
+function start_ssh_agent {
+  start_spinner_in_category 'ssh' 'Starting SSH agent'
+
+  eval $(ssh-agent -s) > /dev/null
+  ssh-add "${HOME}/.ssh/id" 2> /dev/null
+
+  stop_spinner $?
+}
+
+# Install code environment
+# -------------------------------------------------------------------------------------------------
+
+function install_code_environment {
+  log_title "CODE ENVIRONMENT"
+
+  execute_install_code_environment_script
+}
+
+function execute_install_code_environment_script {
+  echo "ok"
+}
+
+# Helpers
+# -------------------------------------------------------------------------------------------------
+
+function help {
+  cat << EOF
+Setups a Github Codespaces container with all required tools for a proper developer experience.
+
+usage: $0 [OPTIONS]
+    --help      Show this message
+EOF
+}
+
+# Execute
+# -------------------------------------------------------------------------------------------------
+
+main $@

@@ -1,0 +1,220 @@
+#!/usr/bin/env bash
+
+# WHICH OS/DISTROS ARE SUPPORTED
+# -------------------------------------------------------------------------------------------------
+#
+# For now, this script only works in the following list of operating systems:
+# - Linux
+#
+# Considering your OS as Linux, it only works in the following distros:
+# - elementary OS Hera
+# - Debian
+#
+# REQUIRED DEPENDENCIES
+# -------------------------------------------------------------------------------------------------
+#
+# To run this script, you must have the following tools installed:
+# - bash 4
+
+# Imports
+# -------------------------------------------------------------------------------------------------
+
+IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
+REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
+
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+
+# Global variables
+# -------------------------------------------------------------------------------------------------
+
+UNKNWON="UNKNWON"
+
+DISTRO="${UNKNOWN}"
+DISTRO_ELEMENTARY="ELEMENTARY"
+DISTRO_DEBIAN="DEBIAN"
+
+MINIMAL=false
+SHELL_TOOLS=false
+DEV_TOOLS=false
+DOTFILES=false
+
+# Entrypoint
+# -------------------------------------------------------------------------------------------------
+
+function main {
+  parse_args $@
+  validate_requirements
+  prepare
+
+  install_shell_tools
+  install_dev_tools
+  install_dotfiles
+}
+
+# Parse args
+# -------------------------------------------------------------------------------------------------
+
+function parse_args {
+  for opt in "$@"; do
+    case $opt in
+      --help)
+        help
+        exit 0
+        ;;
+      --minimal) MINIMAL=true ;;
+      --shell-tools) SHELL_TOOLS=true ;;
+      --dev-tools) DEV_TOOLS=true ;;
+      --dotfiles) DOTFILES=true ;;
+      --complete)
+        SHELL_TOOLS=true
+        DEV_TOOLS=true
+        DOTFILES=true
+        ;;
+      *)
+        echo "unknown option: $opt"
+        help
+        exit 1
+        ;;
+    esac
+  done
+}
+
+# Validate
+# -------------------------------------------------------------------------------------------------
+
+function validate_requirements {
+  validate_os
+  validate_distro
+  validate_dependencies
+}
+
+function validate_os {
+  linux_os="LINUX"
+  unknown_os="${UNKNOWN}"
+  uname_output="$(uname -s)"
+
+  case "${uname_output}" in
+    Linux*) current_os="${linux_os}";;
+    *) current_os="${unknown_os}"
+  esac
+
+  if [ "${current_os}" = "${unknown_os}" ]; then
+    throw_error "Your operating system is not supported"
+  fi
+}
+
+function validate_distro {
+  elementary_os_distro="${DISTRO_ELEMENTARY}"
+  debian_distro="${DISTRO_DEBIAN}"
+  unknown_distro="${UNKNOWN}"
+  lsb_output="$(lsb_release -si)"
+
+  case "${lsb_output}" in
+    elementary*) current_distro="${elementary_os_distro}";;
+    Debian*) current_distro="${debian_distro}";;
+    *) current_distro="${unknown_distro}"
+  esac
+
+  if [ "${current_distro}" = "${unknown_distro}" ]; then
+    throw_error "Your Linux distro is not supported"
+  fi
+
+  identify_distro ${current_distro}
+}
+
+function identify_distro {
+  identified_distro=$1
+  DISTRO="${identified_distro}"
+}
+
+function validate_dependencies {
+  validate_bash_dependency
+}
+
+# Prepare
+# -------------------------------------------------------------------------------------------------
+
+function prepare {
+  update_su_timestamp
+
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) prepare_debian;;
+    ${DISTRO_DEBIAN}) prepare_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a prepare function for your distro: ${DISTRO}"
+  esac
+}
+
+function prepare_debian {
+  start_spinner_in_category 'Prepare' 'Updating your apt repositories'
+
+  sudo apt-get update -y > /dev/null
+
+  stop_spinner $?
+}
+
+# Install shell tools
+# -------------------------------------------------------------------------------------------------
+
+function install_shell_tools {
+  if [ "${SHELL_TOOLS}" = true ]; then
+    log_title "SHELL TOOLS"
+    minimal_opt=$(build_minimal_opt)
+
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools") $minimal_opt
+  fi
+}
+
+# Install dev tools
+# -------------------------------------------------------------------------------------------------
+
+function install_dev_tools {
+  if [ "${DEV_TOOLS}" = true ]; then
+    log_title "DEV TOOLS"
+    minimal_opt=$(build_minimal_opt)
+
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dev-tools") $minimal_opt
+  fi
+}
+
+# Install dotfiles
+# -------------------------------------------------------------------------------------------------
+
+function install_dotfiles {
+  if [ "${DOTFILES}" = true ]; then
+    log_title "DOTFILES"
+    minimal_opt=$(build_minimal_opt)
+
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles") $minimal_opt
+  fi
+}
+
+# Helpers
+# -------------------------------------------------------------------------------------------------
+
+function build_minimal_opt {
+  [ "${MINIMAL}" = true ] && echo "--minimal" || echo ""
+}
+
+function help {
+  cat << EOF
+Bootstraps my code environment on the current machine by installing all required tools and dotfiles.
+
+usage: $0 [OPTIONS]
+    --help           Show this message
+    --minimal        Install only the minimal required tools
+    --shell-tools    Install my shell tools
+    --dev-tools      Install my dev tools
+    --dotfiles       Install my dotfiles
+    --complete       Install my shell tools, dev tools and dotfiles at once
+EOF
+}
+
+# Execute
+# -------------------------------------------------------------------------------------------------
+
+main $@
