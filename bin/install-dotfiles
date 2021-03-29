@@ -9,11 +9,12 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
 REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
-source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
 
 # Global variables
 # -------------------------------------------------------------------------------------------------
@@ -111,10 +112,10 @@ function add_symlinks {
 }
 
 function sync_dotfiles {
-  start_spinner_in_category 'repository' 'Cloning dotfiles'
+  start_spinner_in_category 'fresh' 'Syncing dotfiles'
 
-  source "${HOME}/.fresh/build/shell.sh"
-  fresh
+  source "${HOME}/.fresh/build/shell.sh" 2> /dev/null
+  fresh > /dev/null
 
   stop_spinner $?
 }
