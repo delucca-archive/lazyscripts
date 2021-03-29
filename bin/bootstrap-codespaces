@@ -71,7 +71,7 @@ function validate_dependencies {
 # -------------------------------------------------------------------------------------------------
 
 function pre_setup {
-  log_title "SSH CREDENTIALS"
+  log_title "PRE SETUP"
   
   setup_ssh_credentials
 }
@@ -181,7 +181,7 @@ function post_setup {
 function install_zsh_plugins {
   start_spinner_in_category 'zinit' 'Install plugins'
   
-  zsh -ic "@zinit-scheduler burst" > /dev/null
+  zsh -ic "@zinit-scheduler burst" &> /dev/null
   
   stop_spinner $?
 }
