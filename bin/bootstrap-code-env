@@ -19,9 +19,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"cat"}
-REPOSITORY_URL=${REPOSITORY_URL:-"/workspaces"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"lazyscripts"}
+IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
+REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
 source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
@@ -163,8 +163,9 @@ function prepare_debian {
 function install_shell_tools {
   if [ "${SHELL_TOOLS}" = true ]; then
     log_title "SHELL TOOLS"
+    minimal_opt=$(build_minimal_opt)
 
-    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools")
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools") $minimal_opt
   fi
 }
 
@@ -174,8 +175,9 @@ function install_shell_tools {
 function install_dev_tools {
   if [ "${DEV_TOOLS}" = true ]; then
     log_title "DEV TOOLS"
+    minimal_opt=$(build_minimal_opt)
 
-    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dev-tools")
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dev-tools") $minimal_opt
   fi
 }
 
@@ -185,13 +187,18 @@ function install_dev_tools {
 function install_dotfiles {
   if [ "${DOTFILES}" = true ]; then
     log_title "DOTFILES"
+    minimal_opt=$(build_minimal_opt)
 
-    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles")
+    source <("${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles") $minimal_opt
   fi
 }
 
 # Helpers
 # -------------------------------------------------------------------------------------------------
+
+function build_minimal_opt {
+  [ "${MINIMAL}" = true ] && echo "--minimal" || echo ""
+}
 
 function help {
   cat << EOF
