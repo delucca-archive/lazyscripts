@@ -20,7 +20,7 @@
 # -------------------------------------------------------------------------------------------------
 
 REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"feature/init-code-environment"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
@@ -30,16 +30,11 @@ source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
 # Global variables
 # -------------------------------------------------------------------------------------------------
 
-UNKNWON="UNKNWON"
-
 DISTRO="${UNKNOWN}"
 DISTRO_ELEMENTARY="ELEMENTARY"
 DISTRO_DEBIAN="DEBIAN"
 
 MINIMAL=false
-SHELL_TOOLS=false
-DEV_TOOLS=false
-DOTFILES=false
 
 # Entrypoint
 # -------------------------------------------------------------------------------------------------
@@ -49,9 +44,7 @@ function main {
   validate_requirements
   prepare
 
-  install_shell_tools
-  install_dev_tools
-  install_dotfiles
+  install_full
 }
 
 # Parse args
@@ -65,14 +58,6 @@ function parse_args {
         exit 0
         ;;
       --minimal) MINIMAL=true ;;
-      --shell-tools) SHELL_TOOLS=true ;;
-      --dev-tools) DEV_TOOLS=true ;;
-      --dotfiles) DOTFILES=true ;;
-      --complete)
-        SHELL_TOOLS=true
-        DEV_TOOLS=true
-        DOTFILES=true
-        ;;
       *)
         echo "unknown option: $opt"
         help
@@ -156,60 +141,51 @@ function prepare_debian {
   stop_spinner $?
 }
 
-# Install shell tools
+# Install full
 # -------------------------------------------------------------------------------------------------
 
-function install_shell_tools {
-  if [ "${SHELL_TOOLS}" = true ]; then
-    log_title "SHELL TOOLS"
-
-    source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools")
+function install_full {
+  if [ "${MINIMAL}" = false ]; then
+    install_diff_so_fancy
+    install_latest_git
   fi
 }
 
-# Install dev tools
-# -------------------------------------------------------------------------------------------------
+function install_diff_so_fancy {
+  start_spinner_in_category 'diff-so-fancy' 'Cloning'
 
-function install_dev_tools {
-  if [ "${DEV_TOOLS}" = true ]; then
-    log_title "DEV TOOLS"
-
-    source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dev-tools")
-  fi
-}
-
-# Install dotfiles
-# -------------------------------------------------------------------------------------------------
-
-function install_dotfiles {
-  if [ "${DOTFILES}" = true ]; then
-    log_title "DOTFILES"
-
-    install_dotfiles_manager
-    clone_dotfiles_repository
-    sync_dotfiles
-  fi
-}
-
-function install_dotfiles_manager {
-  start_spinner_in_category 'fresh' 'Installing'
-
-  bash -c "`curl -sL https://get.freshshell.com`" > /dev/null
+  git_repo_location=$([ -d "/home/git" ] && echo "/home/git/so-fancy/diff-so-fancy" || echo "${HOME}/.diff-so-fancy")
+  [ -d "${git_repo_location}" ] && rm -rf ${git_repo_location}
+  git clone --quiet https://github.com/so-fancy/diff-so-fancy "${git_repo_location}" > /dev/null
 
   stop_spinner $?
+
+  chmod +x "${git_repo_location}/diff-so-fancy"
+  ln -s "${git_repo_location}/diff-so-fancy" "${HOME}/.local/bin/diff-so-fancy"
 }
 
-function clone_dotfiles_repository {
-  start_spinner_in_category 'repository' 'Cloning dotfiles'
+function install_latest_git {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_latest_git_debian;;
+    ${DISTRO_DEBIAN}) install_latest_git_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a latest_git installer for your distro: ${DISTRO}"
+  esac
+}
 
-  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfile" > /dev/null
+function install_latest_git_debian {
+  sudo add-apt-repository ppa:git-core/ppa -y > /dev/null
+
+  start_spinner_in_category 'git' 'Updating repositories'
+
+  sudo apt-get update -y > /dev/null
 
   stop_spinner $?
-}
+  start_spinner_in_category 'git' 'Installing latest version'
 
-function sync_dotfiles {
-  dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
-  echo $dotfile
+  sudo apt-get install git -y > /dev/null
+
+  stop_spinner $?
 }
 
 # Helpers
@@ -217,15 +193,11 @@ function sync_dotfiles {
 
 function help {
   cat << EOF
-Bootstraps my code environment on the current machine by installing all required tools and dotfiles.
+Installs my Development tools. Those tools are used to develop applications and softwares.
 
 usage: $0 [OPTIONS]
     --help           Show this message
     --minimal        Install only the minimal required tools
-    --shell-tools    Install my shell tools
-    --dev-tools      Install my dev tools
-    --dotfiles       Install my dotfiles
-    --complete       Install my shell tools, dev tools and dotfiles at once
 EOF
 }
 
