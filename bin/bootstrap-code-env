@@ -191,21 +191,6 @@ function install_dotfiles {
   fi
 }
 
-function install_dotfiles_manager {
-  start_spinner_in_category 'fresh' 'Installing'
-
-  bash -c "`curl -sL https://get.freshshell.com`" > /dev/null
-
-  stop_spinner $?
-}
-
-function clone_dotfiles_repository {
-  start_spinner_in_category 'repository' 'Cloning dotfiles'
-
-  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfile" > /dev/null
-
-  stop_spinner $?
-}
 
 function sync_dotfiles {
   dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")

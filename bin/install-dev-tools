@@ -146,6 +146,8 @@ function prepare_debian {
 
 function install_full {
   if [ "${MINIMAL}" = false ]; then
+    log_title "FULL DEV TOOLS"
+
     install_diff_so_fancy
     install_latest_git
   fi
