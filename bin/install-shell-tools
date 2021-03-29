@@ -286,7 +286,7 @@ function install_zinit {
   stop_spinner $?
 }
 
-function install_zinit_plugins {
+function install_zsh_plugins {
   zsh -ic "@zinit-scheduler burst"
 }
 
