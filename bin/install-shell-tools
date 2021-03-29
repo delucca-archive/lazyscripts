@@ -149,39 +149,15 @@ function prepare_debian {
 function install_minimal {
   log_title "MINIMAL SHELL TOOLS"
 
-  install_zsh
-  install_zinit
   install_xclip
   install_fzf
   install_fd
   install_tree
   install_ripgrep
   install_keychain
-}
-
-function install_zsh {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_zsh_debian;;
-    ${DISTRO_DEBIAN}) install_zsh_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a zsh installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_zsh_debian {
-  start_spinner_in_category 'zsh' 'Installing'
-
-  sudo apt-get install zsh -y > /dev/null
-
-  stop_spinner $?
-}
-
-function install_zinit {
-  start_spinner_in_category 'zinit' 'Installing'
-
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)" &> /dev/null
-
-  stop_spinner $?
+  install_zsh
+  install_zinit
+  install_zsh_plugins
 }
 
 function install_xclip {
@@ -280,6 +256,35 @@ function install_keychain_debian {
   sudo apt-get install keychain -y > /dev/null
 
   stop_spinner $?
+}
+
+function install_zsh {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_zsh_debian;;
+    ${DISTRO_DEBIAN}) install_zsh_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a zsh installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_zsh_debian {
+  start_spinner_in_category 'zsh' 'Installing'
+
+  sudo apt-get install zsh -y > /dev/null
+
+  stop_spinner $?
+}
+
+function install_zinit {
+  start_spinner_in_category 'zinit' 'Installing'
+
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/zdharma/zinit/master/doc/install.sh)" &> /dev/null
+
+  stop_spinner $?
+}
+
+function install_zinit_plugins {
+  zsh -ic "@zinit-scheduler burst"
 }
 
 # Install full
