@@ -19,37 +19,33 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/spinner.sh)
-source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/log.sh)
-source <(curl -s https://raw.githubusercontent.com/delucca/lazyscripts/main/src/helpers/handlers.sh)
+REPOSITORY_URL="https://raw.githubusercontent.com/delucca/lazyscripts"
+REPOSITORY_BRANCH="main"
+
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
 
 # Global variables
 # -------------------------------------------------------------------------------------------------
-
-UNKNWON="UNKNWON"
 
 DISTRO="${UNKNOWN}"
 DISTRO_ELEMENTARY="ELEMENTARY"
 DISTRO_DEBIAN="DEBIAN"
 
 MINIMAL=false
-SHELL_TOOLS=false
-DEV_TOOLS=false
-DOTFILES=false
 
 # Entrypoint
 # -------------------------------------------------------------------------------------------------
 
 function main {
   parse_args $@
-
-  update_su_timestamp
   validate_requirements
   prepare
 
-  install_shell_tools
-  install_dev_tools
-  install_dotfiles
+  install_minimal
+  install_full
 }
 
 # Parse args
@@ -63,14 +59,6 @@ function parse_args {
         exit 0
         ;;
       --minimal) MINIMAL=true ;;
-      --shell-tools) SHELL_TOOLS=true ;;
-      --dev-tools) DEV_TOOLS=true ;;
-      --dotfiles) DOTFILES=true ;;
-      --complete)
-        SHELL_TOOLS=true
-        DEV_TOOLS=true
-        DOTFILES=true
-        ;;
       *)
         echo "unknown option: $opt"
         help
@@ -132,27 +120,18 @@ function validate_dependencies {
   validate_bash_dependency
 }
 
-function validate_bash_dependency {
-  major_version="$(bash --version | head -1 | cut -d ' ' -f 4 | cut -d '.' -f 1)"
-  min_major_version="4"
-
-  if [ "${major_version}" -lt "${min_major_version}" ]; then
-    throw_error "Your bash major version must be ${min_major_version} or greater"
-  fi
-}
-
 # Prepare
 # -------------------------------------------------------------------------------------------------
 
 function prepare {
+  update_su_timestamp
+
   case "${DISTRO}" in
     ${DISTRO_ELEMENTARY}) prepare_debian;;
     ${DISTRO_DEBIAN}) prepare_debian;;
     ${UNKNOWN}) throw_error "You first need to identify a distro";;
     *) throw_error "We don't have a prepare function for your distro: ${DISTRO}"
   esac
-
-  trust_github_hosts
 }
 
 function prepare_debian {
@@ -163,28 +142,12 @@ function prepare_debian {
   stop_spinner $?
 }
 
-function trust_github_hosts {
-  start_spinner_in_category 'Prepare' 'Trusting all Github hosts'
-
-  mkdir -p "${HOME}/.ssh"
-  ssh-keyscan "github.com" >> "${HOME}/.ssh/known_hosts" 2> /dev/null
-
-  stop_spinner $?
-}
-
-# Install shell tools
+# Install minimal
 # -------------------------------------------------------------------------------------------------
 
-function install_shell_tools {
-  if [ "${SHELL_TOOLS}" = true ]; then
-    log_title "SHELL TOOLS"
+function install_minimal {
+  log_title "MINIMAL SHELL TOOLS"
 
-    install_minimal_shell_tools
-    install_all_shell_tools
-  fi
-}
-
-function install_minimal_shell_tools {
   install_zsh
   install_zinit
   install_xclip
@@ -193,19 +156,6 @@ function install_minimal_shell_tools {
   install_tree
   install_ripgrep
   install_keychain
-}
-
-function install_all_shell_tools {
-  if [ "${MINIMAL}" = false ]; then
-    install_ack
-    install_jq
-    install_ag
-    install_navi
-    install_bat
-    install_bat_extras
-    install_tmux
-    install_bottom
-  fi
 }
 
 function install_zsh {
@@ -265,56 +215,20 @@ function install_fzf {
   stop_spinner $?
 }
 
-function install_ack {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_ack_debian;;
-    ${DISTRO_DEBIAN}) install_ack_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a ack installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_ack_debian {
-  start_spinner_in_category 'ack' 'Installing'
-
-  sudo apt-get install ack-grep -y > /dev/null
-
-  stop_spinner $?
-
-  sudo dpkg-divert --local --divert /usr/bin/ack --rename --add /usr/bin/ack-grep > /dev/null
-}
-
-function install_bat {
-  start_spinner_in_category 'bat' 'Downloading'
+function install_fd {
+  start_spinner_in_category 'fd' 'Downloading'
 
   pushd /tmp > /dev/null
-  curl https://github.com/sharkdp/bat/releases/download/v0.18.0/bat_0.18.0_amd64.deb -Lso bat.deb
+  curl https://github.com/sharkdp/fd/releases/download/v8.2.1/fd_8.2.1_amd64.deb -Lso fd.deb
 
   stop_spinner $?
-  start_spinner_in_category 'bat' 'Installing'
+  start_spinner_in_category 'fd' 'Installing'
 
-  sudo dpkg -i bat.deb > /dev/null
+  sudo dpkg -i fd.deb > /dev/null
 
   stop_spinner $?
 
   popd > /dev/null
-}
-
-function install_jq {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_jq_debian;;
-    ${DISTRO_DEBIAN}) install_jq_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a jq installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_jq_debian {
-  start_spinner_in_category 'jq' 'Installing'
-
-  sudo apt-get install jq -y > /dev/null
-
-  stop_spinner $?
 }
 
 function install_tree {
@@ -334,20 +248,91 @@ function install_tree_debian {
   stop_spinner $?
 }
 
-function install_fd {
-  start_spinner_in_category 'fd' 'Downloading'
+function install_ripgrep {
+  start_spinner_in_category 'ripgrep' 'Downloading'
 
   pushd /tmp > /dev/null
-  curl https://github.com/sharkdp/fd/releases/download/v8.2.1/fd_8.2.1_amd64.deb -Lso fd.deb
+  curl https://github.com/BurntSushi/ripgrep/releases/download/12.1.1/ripgrep_12.1.1_amd64.deb -Lso ripgrep.deb > /dev/null
 
   stop_spinner $?
-  start_spinner_in_category 'fd' 'Installing'
+  start_spinner_in_category 'ripgrep' 'Installing'
 
-  sudo dpkg -i fd.deb > /dev/null
+  sudo dpkg -i ripgrep.deb > /dev/null
 
   stop_spinner $?
 
   popd > /dev/null
+}
+
+function install_keychain {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_keychain_debian;;
+    ${DISTRO_DEBIAN}) install_keychain_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a keychain installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_keychain_debian {
+  start_spinner_in_category 'keychain' 'Installing'
+
+  sudo apt-get install keychain -y > /dev/null
+
+  stop_spinner $?
+}
+
+# Install full
+# -------------------------------------------------------------------------------------------------
+
+function install_full {
+  if [ "${MINIMAL}" = false ]; then
+    log_title "FULL SHELL TOOLS"
+
+    install_ack
+    install_jq
+    install_ag
+    install_navi
+    install_bat
+    install_bat_extras
+    install_tmux
+    install_bottom
+  fi
+}
+
+function install_ack {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_ack_debian;;
+    ${DISTRO_DEBIAN}) install_ack_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a ack installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_ack_debian {
+  start_spinner_in_category 'ack' 'Installing'
+
+  sudo apt-get install ack-grep -y > /dev/null
+
+  stop_spinner $?
+
+  sudo dpkg-divert --local --divert /usr/bin/ack --rename --add /usr/bin/ack-grep > /dev/null
+}
+
+function install_jq {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_jq_debian;;
+    ${DISTRO_DEBIAN}) install_jq_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a jq installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_jq_debian {
+  start_spinner_in_category 'jq' 'Installing'
+
+  sudo apt-get install jq -y > /dev/null
+
+  stop_spinner $?
 }
 
 function install_ag {
@@ -367,22 +352,6 @@ function install_ag_debian {
   stop_spinner $?
 }
 
-function install_ripgrep {
-  start_spinner_in_category 'ripgrep' 'Downloading'
-
-  pushd /tmp > /dev/null
-  curl https://github.com/BurntSushi/ripgrep/releases/download/12.1.1/ripgrep_12.1.1_amd64.deb -Lso ripgrep.deb > /dev/null
-
-  stop_spinner $?
-  start_spinner_in_category 'ripgrep' 'Installing'
-
-  sudo dpkg -i ripgrep.deb > /dev/null
-
-  stop_spinner $?
-
-  popd > /dev/null
-}
-
 function install_navi {
   start_spinner_in_category 'navi' 'Downloading'
 
@@ -394,6 +363,22 @@ function install_navi {
 
   chmod +x "./install_navi.sh"
   sudo "./install_navi.sh" &> /dev/null
+
+  stop_spinner $?
+
+  popd > /dev/null
+}
+
+function install_bat {
+  start_spinner_in_category 'bat' 'Downloading'
+
+  pushd /tmp > /dev/null
+  curl https://github.com/sharkdp/bat/releases/download/v0.18.0/bat_0.18.0_amd64.deb -Lso bat.deb
+
+  stop_spinner $?
+  start_spinner_in_category 'bat' 'Installing'
+
+  sudo dpkg -i bat.deb > /dev/null
 
   stop_spinner $?
 
@@ -417,23 +402,6 @@ function install_bat_extras {
   sudo mv bat-extras/bin/* /usr/bin
 
   popd > /dev/null
-}
-
-function install_keychain {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_keychain_debian;;
-    ${DISTRO_DEBIAN}) install_keychain_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a keychain installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_keychain_debian {
-  start_spinner_in_category 'keychain' 'Installing'
-
-  sudo apt-get install keychain -y > /dev/null
-
-  stop_spinner $?
 }
 
 function install_tmux {
@@ -507,116 +475,16 @@ function install_bottom_debian {
   popd > /dev/null
 }
 
-# Install dev tools
-# -------------------------------------------------------------------------------------------------
-
-function install_dev_tools {
-  if [ "${DEV_TOOLS}" = true ]; then
-    log_title "DEV TOOLS"
-
-    install_all_dev_tools
-  fi
-}
-
-function install_all_dev_tools {
-  if [ "${MINIMAL}" = false ]; then
-    install_diff_so_fancy
-    install_latest_git
-  fi
-}
-
-function install_diff_so_fancy {
-  start_spinner_in_category 'diff-so-fancy' 'Cloning'
-
-  git_repo_location=$([ -d "/home/git" ] && echo "/home/git/so-fancy/diff-so-fancy" || echo "${HOME}/.diff-so-fancy")
-  [ -d "${git_repo_location}" ] && rm -rf ${git_repo_location}
-  git clone --quiet https://github.com/so-fancy/diff-so-fancy "${git_repo_location}" > /dev/null
-
-  stop_spinner $?
-
-  chmod +x "${git_repo_location}/diff-so-fancy"
-  ln -s "${git_repo_location}/diff-so-fancy" "${HOME}/.local/bin/diff-so-fancy"
-}
-
-function install_latest_git {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_latest_git_debian;;
-    ${DISTRO_DEBIAN}) install_latest_git_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a latest_git installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_latest_git_debian {
-  sudo add-apt-repository ppa:git-core/ppa -y > /dev/null
-
-  start_spinner_in_category 'git' 'Updating repositories'
-
-  sudo apt-get update -y > /dev/null
-
-  stop_spinner $?
-  start_spinner_in_category 'git' 'Installing latest version'
-
-  sudo apt-get install git -y > /dev/null
-
-  stop_spinner $?
-}
-
-# Install dotfiles
-# -------------------------------------------------------------------------------------------------
-
-function install_dotfiles {
-  if [ "${DOTFILES}" = true ]; then
-    log_title "DOTFILES"
-
-    install_dotfiles_manager
-    clone_dotfiles_repository
-    sync_dotfiles
-  fi
-}
-
-function install_dotfiles_manager {
-  start_spinner_in_category 'fresh' 'Installing'
-
-  bash -c "`curl -sL https://get.freshshell.com`" > /dev/null
-
-  stop_spinner $?
-}
-
-function clone_dotfiles_repository {
-  start_spinner_in_category 'repository' 'Cloning dotfiles'
-
-  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfile" > /dev/null
-
-  stop_spinner $?
-}
-
-function sync_dotfiles {
-  dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
-  echo $dotfile
-}
-
 # Helpers
 # -------------------------------------------------------------------------------------------------
 
-function update_su_timestamp {
-  sudo -k
-  sudo -v
-
-  echo
-}
-
 function help {
   cat << EOF
-Bootstraps my code environment on the current machine by installing all required tools and dotfiles.
+Installs my Shell tools. Those tools are used for both debug and shell general usage.
 
 usage: $0 [OPTIONS]
     --help           Show this message
     --minimal        Install only the minimal required tools
-    --shell-tools    Install my shell tools
-    --dev-tools      Install my dev tools
-    --dotfiles       Install my dotfiles
-    --complete       Install my shell tools, dev tools and dotfiles at once
 EOF
 }
 

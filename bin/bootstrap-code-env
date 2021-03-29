@@ -1,0 +1,286 @@
+#!/usr/bin/env bash
+
+# WHICH OS/DISTROS ARE SUPPORTED
+# -------------------------------------------------------------------------------------------------
+#
+# For now, this script only works in the following list of operating systems:
+# - Linux
+#
+# Considering your OS as Linux, it only works in the following distros:
+# - elementary OS Hera
+# - Debian
+#
+# REQUIRED DEPENDENCIES
+# -------------------------------------------------------------------------------------------------
+#
+# To run this script, you must have the following tools installed:
+# - bash 4
+
+# Imports
+# -------------------------------------------------------------------------------------------------
+
+REPOSITORY_URL="https://raw.githubusercontent.com/delucca/lazyscripts"
+REPOSITORY_BRANCH="main"
+
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
+source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+
+# Global variables
+# -------------------------------------------------------------------------------------------------
+
+UNKNWON="UNKNWON"
+
+DISTRO="${UNKNOWN}"
+DISTRO_ELEMENTARY="ELEMENTARY"
+DISTRO_DEBIAN="DEBIAN"
+
+MINIMAL=false
+SHELL_TOOLS=false
+DEV_TOOLS=false
+DOTFILES=false
+
+# Entrypoint
+# -------------------------------------------------------------------------------------------------
+
+function main {
+  parse_args $@
+  validate_requirements
+  prepare
+
+  install_shell_tools
+  install_dev_tools
+  install_dotfiles
+}
+
+# Parse args
+# -------------------------------------------------------------------------------------------------
+
+function parse_args {
+  for opt in "$@"; do
+    case $opt in
+      --help)
+        help
+        exit 0
+        ;;
+      --minimal) MINIMAL=true ;;
+      --shell-tools) SHELL_TOOLS=true ;;
+      --dev-tools) DEV_TOOLS=true ;;
+      --dotfiles) DOTFILES=true ;;
+      --complete)
+        SHELL_TOOLS=true
+        DEV_TOOLS=true
+        DOTFILES=true
+        ;;
+      *)
+        echo "unknown option: $opt"
+        help
+        exit 1
+        ;;
+    esac
+  done
+}
+
+# Validate
+# -------------------------------------------------------------------------------------------------
+
+function validate_requirements {
+  validate_os
+  validate_distro
+  validate_dependencies
+}
+
+function validate_os {
+  linux_os="LINUX"
+  unknown_os="${UNKNOWN}"
+  uname_output="$(uname -s)"
+
+  case "${uname_output}" in
+    Linux*) current_os="${linux_os}";;
+    *) current_os="${unknown_os}"
+  esac
+
+  if [ "${current_os}" = "${unknown_os}" ]; then
+    throw_error "Your operating system is not supported"
+  fi
+}
+
+function validate_distro {
+  elementary_os_distro="${DISTRO_ELEMENTARY}"
+  debian_distro="${DISTRO_DEBIAN}"
+  unknown_distro="${UNKNOWN}"
+  lsb_output="$(lsb_release -si)"
+
+  case "${lsb_output}" in
+    elementary*) current_distro="${elementary_os_distro}";;
+    Debian*) current_distro="${debian_distro}";;
+    *) current_distro="${unknown_distro}"
+  esac
+
+  if [ "${current_distro}" = "${unknown_distro}" ]; then
+    throw_error "Your Linux distro is not supported"
+  fi
+
+  identify_distro ${current_distro}
+}
+
+function identify_distro {
+  identified_distro=$1
+  DISTRO="${identified_distro}"
+}
+
+function validate_dependencies {
+  validate_bash_dependency
+}
+
+# Prepare
+# -------------------------------------------------------------------------------------------------
+
+function prepare {
+  update_su_timestamp
+
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) prepare_debian;;
+    ${DISTRO_DEBIAN}) prepare_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a prepare function for your distro: ${DISTRO}"
+  esac
+}
+
+function prepare_debian {
+  start_spinner_in_category 'Prepare' 'Updating your apt repositories'
+
+  sudo apt-get update -y > /dev/null
+
+  stop_spinner $?
+}
+
+# Install shell tools
+# -------------------------------------------------------------------------------------------------
+
+function install_shell_tools {
+  if [ "${SHELL_TOOLS}" = true ]; then
+    log_title "SHELL TOOLS"
+
+    source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools")
+  fi
+}
+
+# Install dev tools
+# -------------------------------------------------------------------------------------------------
+
+function install_dev_tools {
+  if [ "${DEV_TOOLS}" = true ]; then
+    log_title "DEV TOOLS"
+
+    install_all_dev_tools
+  fi
+}
+
+function install_all_dev_tools {
+  if [ "${MINIMAL}" = false ]; then
+    install_diff_so_fancy
+    install_latest_git
+  fi
+}
+
+function install_diff_so_fancy {
+  start_spinner_in_category 'diff-so-fancy' 'Cloning'
+
+  git_repo_location=$([ -d "/home/git" ] && echo "/home/git/so-fancy/diff-so-fancy" || echo "${HOME}/.diff-so-fancy")
+  [ -d "${git_repo_location}" ] && rm -rf ${git_repo_location}
+  git clone --quiet https://github.com/so-fancy/diff-so-fancy "${git_repo_location}" > /dev/null
+
+  stop_spinner $?
+
+  chmod +x "${git_repo_location}/diff-so-fancy"
+  ln -s "${git_repo_location}/diff-so-fancy" "${HOME}/.local/bin/diff-so-fancy"
+}
+
+function install_latest_git {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_latest_git_debian;;
+    ${DISTRO_DEBIAN}) install_latest_git_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a latest_git installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_latest_git_debian {
+  sudo add-apt-repository ppa:git-core/ppa -y > /dev/null
+
+  start_spinner_in_category 'git' 'Updating repositories'
+
+  sudo apt-get update -y > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'git' 'Installing latest version'
+
+  sudo apt-get install git -y > /dev/null
+
+  stop_spinner $?
+}
+
+# Install dotfiles
+# -------------------------------------------------------------------------------------------------
+
+function install_dotfiles {
+  if [ "${DOTFILES}" = true ]; then
+    log_title "DOTFILES"
+
+    install_dotfiles_manager
+    clone_dotfiles_repository
+    sync_dotfiles
+  fi
+}
+
+function install_dotfiles_manager {
+  start_spinner_in_category 'fresh' 'Installing'
+
+  bash -c "`curl -sL https://get.freshshell.com`" > /dev/null
+
+  stop_spinner $?
+}
+
+function clone_dotfiles_repository {
+  start_spinner_in_category 'repository' 'Cloning dotfiles'
+
+  git clone --quiet git@github.com:delucca/dotfiles.git "${HOME}/.dotfile" > /dev/null
+
+  stop_spinner $?
+}
+
+function sync_dotfiles {
+  dotfile=$([ "${MINIMAL}" = false ] && echo "${HOME}/.dotfiles/freshrc.min" || echo "${HOME}/.dotfiles/freshrc")
+  echo $dotfile
+}
+
+# Helpers
+# -------------------------------------------------------------------------------------------------
+
+function update_su_timestamp {
+  sudo -k
+  sudo -v
+
+  echo
+}
+
+function help {
+  cat << EOF
+Bootstraps my code environment on the current machine by installing all required tools and dotfiles.
+
+usage: $0 [OPTIONS]
+    --help           Show this message
+    --minimal        Install only the minimal required tools
+    --shell-tools    Install my shell tools
+    --dev-tools      Install my dev tools
+    --dotfiles       Install my dotfiles
+    --complete       Install my shell tools, dev tools and dotfiles at once
+EOF
+}
+
+# Execute
+# -------------------------------------------------------------------------------------------------
+
+main $@

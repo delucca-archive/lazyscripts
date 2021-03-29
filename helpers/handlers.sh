@@ -14,3 +14,10 @@ function throw_error {
   log_error "${message}"
   exit 1
 }
+
+function update_su_timestamp {
+  sudo -k
+  sudo -v
+
+  echo
+}
