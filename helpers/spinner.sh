@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-# Imports
-# -------------------------------------------------------------------------------------------------
-
-REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
-
-source <(curl -s "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-
 # Helpers
 # -------------------------------------------------------------------------------------------------
 
