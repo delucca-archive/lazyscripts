@@ -265,7 +265,7 @@ function install_starship {
   chmod +x "/tmp/starship_install.sh"
   
   stop_spinner $?
-  start_spinner_in_category 'starship' 'Downloading installation script'
+  start_spinner_in_category 'starship' 'Installing'
   
   /tmp/starship_install.sh -y > /dev/null
 
