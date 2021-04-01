@@ -45,6 +45,7 @@ function main {
   validate_requirements
   prepare
 
+  install_minimal
   install_full
 }
 
@@ -142,16 +143,13 @@ function prepare_debian {
   stop_spinner $?
 }
 
-# Install full
+# Install minimal
 # -------------------------------------------------------------------------------------------------
 
-function install_full {
-  if [ "${MINIMAL}" = false ]; then
-    log_title "FULL DEV TOOLS"
+function install_minimal {
+  log_title "MINIMAL DEV TOOLS"
 
-    install_diff_so_fancy
-    install_latest_git
-  fi
+  install_diff_so_fancy
 }
 
 function install_diff_so_fancy {
@@ -163,8 +161,27 @@ function install_diff_so_fancy {
 
   stop_spinner $?
 
+  start_spinner_in_category 'diff-so-fancy' 'Linking binaries'
+
+  bin_file="${HOME}/.local/bin/diff-so-fancy"
+
   chmod +x "${git_repo_location}/diff-so-fancy"
-  ln -s "${git_repo_location}/diff-so-fancy" "${HOME}/.local/bin/diff-so-fancy"
+
+  rm -f "${bin_file}"
+  ln -s "${git_repo_location}/diff-so-fancy" "${bin_file}"
+
+  stop_spinner $?
+}
+
+# Install full
+# -------------------------------------------------------------------------------------------------
+
+function install_full {
+  if [ "${MINIMAL}" = false ]; then
+    log_title "FULL DEV TOOLS"
+
+    install_latest_git
+  fi
 }
 
 function install_latest_git {
