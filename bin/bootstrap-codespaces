@@ -16,9 +16,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"cat"}
-REPOSITORY_URL=${REPOSITORY_URL:-"/workspaces"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"lazyscripts"}
+IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
+REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
+REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
 
 source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
 source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
@@ -32,7 +32,6 @@ function main {
   parse_args $@
   validate_requirements
   
-  pre_setup
   setup
   post_setup
 }
@@ -67,89 +66,6 @@ function validate_dependencies {
   validate_bash_dependency
 }
 
-# Pre setup
-# -------------------------------------------------------------------------------------------------
-
-function pre_setup {
-  log_title "PRE SETUP"
-  
-  setup_ssh_credentials
-}
-
-function setup_ssh_credentials {
-  ensure_ssh_dir
-  trust_github_hosts
-  setup_ssh_private_key
-  setup_ssh_public_key
-  setup_ssh_config
-  start_ssh_agent
-}
-
-function ensure_ssh_dir {
-  start_spinner_in_category 'ssh' 'Ensuring SSH dir'
-
-  mkdir -p "${HOME}/.ssh" > /dev/null
-
-  stop_spinner $?
-}
-
-function trust_github_hosts {
-  start_spinner_in_category 'ssh' 'Trusting all Github hosts'
-
-  ssh-keyscan "github.com" >> "${HOME}/.ssh/known_hosts" 2> /dev/null
-
-  stop_spinner $?
-}
-
-function setup_ssh_private_key {
-  start_spinner_in_category 'ssh' 'Install private key'
-
-  private_key_file_path="${HOME}/.ssh/id"
-
-  touch "${private_key_file_path}"
-  chmod 600 "${private_key_file_path}"
-  echo "${SSH_PRIVATE_KEY}" > $private_key_file_path
-
-  stop_spinner $?
-}
-
-function setup_ssh_public_key {
-  start_spinner_in_category 'ssh' 'Install public key'
-
-  public_key_file_path="${HOME}/.ssh/id.pub"
-
-  touch "${public_key_file_path}"
-  chmod 600 "${public_key_file_path}"
-  echo "${SSH_PUBLIC_KEY}" > $public_key_file_path
-
-  stop_spinner $?
-}
-
-function setup_ssh_config {
-  start_spinner_in_category 'ssh' 'Applying configs'
-
-  ssh_config_file_path="${HOME}/.ssh/config"
-  
-  touch $ssh_config_file_path > /dev/null
-  chmod 600 $ssh_config_file_path /dev/null
-  cat<<EOF >$ssh_config_file_path
-Host github.com
-  User delucca
-  IdentityFile ~/.ssh/id
-EOF
-
-  stop_spinner $?
-}
-
-function start_ssh_agent {
-  start_spinner_in_category 'ssh' 'Starting SSH agent'
-
-  eval $(ssh-agent -s) > /dev/null
-  ssh-add "${HOME}/.ssh/id" 2> /dev/null
-
-  stop_spinner $?
-}
-
 # Install code environment
 # -------------------------------------------------------------------------------------------------
 
@@ -158,7 +74,6 @@ function setup {
 
   clear_previous_configs
   execute_install_code_environment_script
-  post_code_env_installation
 }
 
 function clear_previous_configs {
@@ -166,7 +81,7 @@ function clear_previous_configs {
 }
 
 function execute_install_code_environment_script {
-  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --shell-tools --dotfiles --minimal
+  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --complete --minimal
 }
 
 # Install code environment
@@ -176,6 +91,7 @@ function post_setup {
   log_title "POST SETUP"
 
   install_zsh_plugins
+  update_local_git_config
 }
   
 function install_zsh_plugins {
@@ -183,6 +99,15 @@ function install_zsh_plugins {
   
   zsh -ic "@zinit-scheduler burst" &> /dev/null
   
+  stop_spinner $?
+}
+
+function update_local_git_config {
+  start_spinner_in_category 'git' 'Updating local git config'
+
+  rm -f "${HOME}/.gitconfig.local"
+  ln -s "${HOME}/.dotfiles/config/gitconfig.codespaces" "${HOME}/.gitconfig.local"
+
   stop_spinner $?
 }
 
