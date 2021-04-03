@@ -189,6 +189,7 @@ function install_full {
     #install_terraform
     #install_mycli
     #install_pgcli
+    install_aws_cli
   fi
 }
 
@@ -339,9 +340,24 @@ function install_mycli {
 }
 
 function install_pgcli {
-  start_spinner_in_category 'phcli' 'Installing'
+  start_spinner_in_category 'pgcli' 'Installing'
 
   sudo apt-get install pgcli -y > /dev/null
+
+  stop_spinner $?
+}
+
+function install_aws_cli {
+  start_spinner_in_category 'aws-cli' 'Downloading'
+
+  cd /tmp
+  curl -Ls "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'aws-cli' 'Installing'
+
+  unzip awscliv2.zip > /dev/null
+  sudo ./aws/install > /dev/null
 
   stop_spinner $?
 }
