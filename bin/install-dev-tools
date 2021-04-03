@@ -189,7 +189,8 @@ function install_full {
     #install_terraform
     #install_mycli
     #install_pgcli
-    install_aws_cli
+    #install_aws_cli
+    install_minikube
   fi
 }
 
@@ -358,6 +359,49 @@ function install_aws_cli {
 
   unzip awscliv2.zip > /dev/null
   sudo ./aws/install > /dev/null
+
+  stop_spinner $?
+}
+
+function install_minikube {
+  start_spinner_in_category 'minikube' 'Downloading'
+
+  cd /tmp
+  curl -LsO https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'minikube' 'Installing'
+
+  sudo dpkg -i minikube_latest_amd64.deb > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'minikube' 'Configuring data folder'
+
+  sudo useradd minikube > /dev/null
+  sudo bash -c 'cat<<EOF >/var/lib/AccountsService/users/minikube
+[User]
+SystemAccount=true
+EOF' > /dev/null
+  sudo mkhomedir_helper minikube > /dev/null
+  sudo bash -c 'cat<<EOF >/etc/systemd/system/home-minikube-.minikube.mount
+[Unit]
+Description=Bind mount for my Minikube folder
+
+[Mount]
+What=/mnt/hdd0/minikube
+Where=/home/minikube/.minikube
+Type=none
+Options=bind
+
+[Install]
+WantedBy=local-fs.target
+EOF' > /dev/null
+
+  sudo systemctl enable home-minikube-.minikube.mount > /dev/null
+  sudo systemctl start home-minikube-minikube.mount > /dev/null
+  sudo mkdir /home/minikube/.minikube > /dev/null
+  sudo chown -R minikube:minikube /home/minikube/.minikube > /dev/null
+  sudo setfacl -R -m user:${USER}:rwx ~minikube > /dev/null
 
   stop_spinner $?
 }
