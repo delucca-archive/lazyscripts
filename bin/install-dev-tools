@@ -180,17 +180,18 @@ function install_full {
   if [ "${MINIMAL}" = false ]; then
     log_title "FULL DEV TOOLS"
 
-    # install_latest_git
-    #install_docker
-    #install_docker_compose
-    #install_kubectl
-    #install_kubectx
-    #install_go
-    #install_terraform
-    #install_mycli
-    #install_pgcli
-    #install_aws_cli
+    install_latest_git
+    install_docker
+    install_docker_compose
+    install_kubectl
+    install_kubectx
+    install_go
+    install_terraform
+    install_mycli
+    install_pgcli
+    install_aws_cli
     install_minikube
+    install_vscode
   fi
 }
 
@@ -402,6 +403,20 @@ EOF' > /dev/null
   sudo mkdir /home/minikube/.minikube > /dev/null
   sudo chown -R minikube:minikube /home/minikube/.minikube > /dev/null
   sudo setfacl -R -m user:${USER}:rwx ~minikube > /dev/null
+
+  stop_spinner $?
+}
+
+function install_vscode {
+  start_spinner_in_category 'vscode' 'Downloading'
+
+  cd /tmp
+  curl -Ls https://go.microsoft.com/fwlink/?LinkID=760868 -o vscode.deb > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'vscode' 'Installing'
+
+  sudo apt-get -qq install -y ./vscode.deb > /dev/null
 
   stop_spinner $?
 }
