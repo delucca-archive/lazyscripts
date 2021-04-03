@@ -186,7 +186,9 @@ function install_full {
     #install_kubectl
     #install_kubectx
     #install_go
-    install_terraform
+    #install_terraform
+    #install_mycli
+    #install_pgcli
   fi
 }
 
@@ -314,7 +316,7 @@ EOF' > /dev/null
 function install_terraform {
   start_spinner_in_category 'Terraform' 'Adding repository'
 
-  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - > /dev/null
+  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1 apt-key add - > /dev/null
   sudo apt-get install software-properties-common -y > /dev/null
   sudo apt-get update -y > /dev/null
   sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com bionic main" > /dev/null
@@ -324,6 +326,22 @@ function install_terraform {
 
   sudo apt-get update -y > /dev/null
   sudo apt-get install terraform -y> /dev/null
+
+  stop_spinner $?
+}
+
+function install_mycli {
+  start_spinner_in_category 'mycli' 'Installing'
+
+  sudo apt-get install mycli -y > /dev/null
+
+  stop_spinner $?
+}
+
+function install_pgcli {
+  start_spinner_in_category 'phcli' 'Installing'
+
+  sudo apt-get install pgcli -y > /dev/null
 
   stop_spinner $?
 }
