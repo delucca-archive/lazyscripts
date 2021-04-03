@@ -181,6 +181,11 @@ function install_full {
     log_title "FULL DEV TOOLS"
 
     install_latest_git
+    install_docker
+    install_docker_compose
+    install_kubectl
+    install_kubectx
+    install_go
   fi
 }
 
@@ -194,8 +199,13 @@ function install_latest_git {
 }
 
 function install_latest_git_debian {
+  start_spinner_in_category 'git' 'Adding repositories'
+
+  sudo apt-get install software-properties-common -y > /dev/null
+  sudo apt-get update -y > /dev/null
   sudo add-apt-repository ppa:git-core/ppa -y > /dev/null
 
+  stop_spinner $?
   start_spinner_in_category 'git' 'Updating repositories'
 
   sudo apt-get update -y > /dev/null
@@ -204,6 +214,104 @@ function install_latest_git_debian {
   start_spinner_in_category 'git' 'Installing latest version'
 
   sudo apt-get install git -y > /dev/null
+
+  stop_spinner $?
+}
+
+function install_docker {
+  start_spinner_in_category 'Docker' 'Clearing previous installation'
+
+  sudo apt remove docker docker-engine docker.io containerd runc
+
+  stop_spinner $?
+  start_spinner_in_category 'Docker' 'Adding requirements'
+
+  curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg > /dev/null
+  sudo apt-get update > /dev/null
+
+  sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release > /dev/null
+
+  echo \
+    "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'Docker' 'Installing'
+
+  sudo apt-get update > /dev/null
+  sudo apt-get install docker-ce docker-ce-cli containerd.io > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'Docker' 'Removing sudo requirements'
+
+  sudo groupadd docker > /dev/null
+  sudo usermod -aG docker $USER > /dev/null
+
+  stop_spinner $?
+}
+
+function install_docker_compose {
+  start_spinner_in_category 'docker-compose' 'Installing'
+
+  sudo curl -L "https://github.com/docker/compose/releases/download/1.28.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose > /dev/null
+  sudo chmod +x /usr/local/bin/docker-compose > /dev/null
+
+  stop_spinner $?
+}
+
+function install_kubectl {
+  start_spinner_in_category 'kubectl' 'Installing'
+
+  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" > /dev/null
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl > /dev/null
+
+  stop_spinner $?
+}
+
+function install_kubectx {
+  start_spinner_in_category 'kubectx' 'Downloading'
+
+  cd /tmp
+  wget https://github.com/ahmetb/kubectx/releases/download/v0.9.3/kubectx_v0.9.3_linux_x86_64.tar.gz > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'kubectx' 'Installing'
+
+  tar -xvf kubectx_v0.9.3_linux_x86_64.tar.gz > /dev/null
+  chmod +x kubectx > /dev/null
+  mv kubectx ~/.local/bin > /dev/nul
+
+  stop_spinner $?
+}
+
+function install_go {
+  start_spinner_in_category 'go' 'Downloading'
+
+  cd /tmp
+  curl -O https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'go' 'Installing'
+
+  tar xvf go1.12.7.linux-amd64.tar.gz > /dev/null
+  sudo mv go /usr/local > /dev/null
+
+  stop_spinner $?
+  start_spinner_in_category 'go' 'Creating folder structure'
+
+  sudo useradd go > /dev/null
+  sudo passwd go > /dev/null
+  sudo bash -c 'cat<<EOF >/var/lib/AccountsService/users/go
+[User]
+SystemAccount=true
+EOF' > /dev/null
+  sudo mkhomedir_helper go > /dev/null
+  sudo setfacl -R -m user:${USER}:rwx ~go > /dev/null
 
   stop_spinner $?
 }
