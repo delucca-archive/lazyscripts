@@ -21,7 +21,6 @@
 
 source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/feedback.sh")
 source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/validation.sh")
-source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/authorization.sh")
 
 # Global variables
 # -------------------------------------------------------------------------------------------------
