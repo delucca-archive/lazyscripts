@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # WHICH OS/DISTROS ARE SUPPORTED
 # -------------------------------------------------------------------------------------------------
@@ -19,14 +19,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
-REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
-
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/feedback.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/validation.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/authorization.sh")
 
 # Global variables
 # -------------------------------------------------------------------------------------------------
@@ -154,7 +149,6 @@ function install_minimal {
   install_fd
   install_tree
   install_ripgrep
-  install_keychain
   install_starship
   install_zsh
   install_zinit
@@ -241,23 +235,6 @@ function install_ripgrep {
   popd > /dev/null
 }
 
-function install_keychain {
-  case "${DISTRO}" in
-    ${DISTRO_ELEMENTARY}) install_keychain_debian;;
-    ${DISTRO_DEBIAN}) install_keychain_debian;;
-    ${UNKNOWN}) throw_error "You first need to identify a distro";;
-    *) throw_error "We don't have a keychain installer for your distro: ${DISTRO}"
-  esac
-}
-
-function install_keychain_debian {
-  start_spinner_in_category 'keychain' 'Installing'
-
-  sudo apt-get install keychain -y > /dev/null
-
-  stop_spinner $?
-}
-
 function install_starship {
   start_spinner_in_category 'starship' 'Downloading installation script'
 
@@ -315,6 +292,7 @@ function install_full {
     install_bat_extras
     install_tmux
     install_bottom
+    install_keychain
   fi
 }
 
@@ -492,6 +470,23 @@ function install_bottom_debian {
   stop_spinner $?
 
   popd > /dev/null
+}
+
+function install_keychain {
+  case "${DISTRO}" in
+    ${DISTRO_ELEMENTARY}) install_keychain_debian;;
+    ${DISTRO_DEBIAN}) install_keychain_debian;;
+    ${UNKNOWN}) throw_error "You first need to identify a distro";;
+    *) throw_error "We don't have a keychain installer for your distro: ${DISTRO}"
+  esac
+}
+
+function install_keychain_debian {
+  start_spinner_in_category 'keychain' 'Installing'
+
+  sudo apt-get install keychain -y > /dev/null
+
+  stop_spinner $?
 }
 
 # Helpers

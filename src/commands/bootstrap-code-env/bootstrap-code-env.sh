@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # WHICH OS/DISTROS ARE SUPPORTED
 # -------------------------------------------------------------------------------------------------
@@ -19,14 +19,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
-REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
-
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/feedback.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/validation.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/authorization.sh")
 
 # Global variables
 # -------------------------------------------------------------------------------------------------
@@ -142,7 +137,9 @@ function install_shell_tools {
     log_title "SHELL TOOLS"
     minimal_opt=$(build_minimal_opt)
 
-    source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-shell-tools") $minimal_opt
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-shell-tools" -o "/tmp/install-shell-tools"
+    chmod +x "/tmp/install-shell-tools"
+    /tmp/install-shell-tools $minimal_opt
   fi
 }
 
@@ -154,7 +151,9 @@ function install_dev_tools {
     log_title "DEV TOOLS"
     minimal_opt=$(build_minimal_opt)
 
-    source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dev-tools") $minimal_opt
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-dev-tools" -o "/tmp/install-dev-tools"
+    chmod +x "/tmp/install-dev-tools"
+    /tmp/install-dev-tools $minimal_opt
   fi
 }
 
@@ -166,7 +165,9 @@ function install_dotfiles {
     log_title "DOTFILES"
     minimal_opt=$(build_minimal_opt)
 
-    source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/install-dotfiles") $minimal_opt
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-dotfiles" -o "/tmp/install-dotfiles"
+    chmod +x "/tmp/install-dotfiles"
+    /tmp/install-dotfiles $minimal_opt
   fi
 }
 

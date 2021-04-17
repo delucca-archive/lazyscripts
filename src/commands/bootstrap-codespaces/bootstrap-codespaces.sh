@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # REQUIRED DEPENDENCIES
 # -------------------------------------------------------------------------------------------------
@@ -16,14 +16,9 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-IMPORT_COMMAND=${IMPORT_COMMAND:-"curl -s"}
-REPOSITORY_URL=${REPOSITORY_URL:-"https://raw.githubusercontent.com/delucca/lazyscripts"}
-REPOSITORY_BRANCH=${REPOSITORY_BRANCH:-"main"}
-
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/spinner.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/log.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/handlers.sh")
-source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/helpers/validators.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/feedback.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/validation.sh")
+source <(curl -s "https://raw.githubusercontent.com/delucca/shell-functions/1.0.1/modules/authorization.sh")
 
 # Entrypoint
 # -------------------------------------------------------------------------------------------------
@@ -81,7 +76,9 @@ function clear_previous_configs {
 }
 
 function execute_install_code_environment_script {
-  source <(eval "${IMPORT_COMMAND}" "${REPOSITORY_URL}/${REPOSITORY_BRANCH}/bin/bootstrap-code-env") --complete --minimal
+  curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/bootstrap-code-env" -o "/tmp/bootstrap-code-env"
+  chmod +x "/tmp/bootstrap-code-env"
+  /tmp/bootstrap-code-env --complete --minimal
 }
 
 # Install code environment
