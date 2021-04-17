@@ -75,7 +75,7 @@ function clear_previous_configs {
 }
 
 function execute_install_code_environment_script {
-  curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/bootstrap-code-env" -o "/tmp/bootstrap-code-env"
+  curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.2/bin/bootstrap-code-env" -o "/tmp/bootstrap-code-env"
   chmod +x "/tmp/bootstrap-code-env"
   /tmp/bootstrap-code-env --complete --minimal
 }

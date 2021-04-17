@@ -136,7 +136,7 @@ function install_shell_tools {
     log_title "SHELL TOOLS"
     minimal_opt=$(build_minimal_opt)
 
-    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-shell-tools" -o "/tmp/install-shell-tools"
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.2/bin/install-shell-tools" -o "/tmp/install-shell-tools"
     chmod +x "/tmp/install-shell-tools"
     /tmp/install-shell-tools $minimal_opt
   fi
@@ -150,7 +150,7 @@ function install_dev_tools {
     log_title "DEV TOOLS"
     minimal_opt=$(build_minimal_opt)
 
-    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-dev-tools" -o "/tmp/install-dev-tools"
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.2/bin/install-dev-tools" -o "/tmp/install-dev-tools"
     chmod +x "/tmp/install-dev-tools"
     /tmp/install-dev-tools $minimal_opt
   fi
@@ -164,7 +164,7 @@ function install_dotfiles {
     log_title "DOTFILES"
     minimal_opt=$(build_minimal_opt)
 
-    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.1/bin/install-dotfiles" -o "/tmp/install-dotfiles"
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.2/bin/install-dotfiles" -o "/tmp/install-dotfiles"
     chmod +x "/tmp/install-dotfiles"
     /tmp/install-dotfiles $minimal_opt
   fi
