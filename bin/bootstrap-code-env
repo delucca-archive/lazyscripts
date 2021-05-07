@@ -148,7 +148,7 @@ function install_dev_tools {
     log_title "DEV TOOLS"
     minimal_opt=$(build_minimal_opt)
 
-    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.9/modules/install-dev-tools.sh" | bash -s -- $minimal_opt
+    curl -s "https://raw.githubusercontent.com/delucca/lazyscripts/1.0.10/modules/install-dev-tools.sh" | bash -s -- $minimal_opt
   fi
 }
 
