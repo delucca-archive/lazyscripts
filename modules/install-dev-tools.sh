@@ -186,7 +186,6 @@ function install_full {
     install_pgcli
     install_aws_cli
     install_minikube
-    install_vscode
   fi
 }
 
@@ -234,7 +233,7 @@ function install_docker {
 
   echo \
     "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    $(lsb_release -uc) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
   stop_spinner $?
   start_spinner_in_category 'Docker' 'Installing'
@@ -280,7 +279,7 @@ function install_kubectx {
 
   tar -xvf kubectx_v0.9.3_linux_x86_64.tar.gz > /dev/null
   chmod +x kubectx > /dev/null
-  mv kubectx ~/.local/bin > /dev/nul
+  mv kubectx ~/.local/bin > /dev/null
 
   stop_spinner $?
 }
@@ -393,25 +392,11 @@ Options=bind
 WantedBy=local-fs.target
 EOF' > /dev/null
 
-  sudo systemctl enable home-minikube-.minikube.mount > /dev/null
-  sudo systemctl start home-minikube-minikube.mount > /dev/null
   sudo mkdir /home/minikube/.minikube > /dev/null
   sudo chown -R minikube:minikube /home/minikube/.minikube > /dev/null
   sudo setfacl -R -m user:${USER}:rwx ~minikube > /dev/null
-
-  stop_spinner $?
-}
-
-function install_vscode {
-  start_spinner_in_category 'vscode' 'Downloading'
-
-  cd /tmp
-  curl -Ls https://code.visualstudio.com/sha/download?build=insider&os=linux-deb-x64 -o vscode.deb > /dev/null
-
-  stop_spinner $?
-  start_spinner_in_category 'vscode' 'Installing'
-
-  sudo apt-get -qq install -y ./vscode.deb > /dev/null
+  sudo systemctl start home-minikube-.minikube.mount > /dev/null
+  sudo systemctl enable home-minikube-.minikube.mount > /dev/null
 
   stop_spinner $?
 }
