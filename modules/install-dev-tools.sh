@@ -233,7 +233,7 @@ function install_docker {
 
   echo \
     "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -uc) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    $(lsb_release -ucs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
   stop_spinner $?
   start_spinner_in_category 'Docker' 'Installing'
