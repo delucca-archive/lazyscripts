@@ -107,7 +107,7 @@ function validate_distro {
   lsb_output="$(lsb_release -si)"
 
   case "${lsb_output}" in
-    elementary*) current_distro="${elementary_os_distro}";;
+    Elementary*) current_distro="${elementary_os_distro}";;
     Debian*) current_distro="${debian_distro}";;
     *) current_distro="${unknown_distro}"
   esac
