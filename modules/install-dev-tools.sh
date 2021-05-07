@@ -231,15 +231,11 @@ function install_docker {
     gnupg \
     lsb-release -y > /dev/null
 
-  echo \
-    "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
-    $(lsb_release -ucs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
   stop_spinner $?
   start_spinner_in_category 'Docker' 'Installing'
 
   sudo apt-get update -y > /dev/null
-  sudo apt-get install docker-ce docker-ce-cli containerd.io -y > /dev/null
+  sudo apt-get install docker.io -y > /dev/null
 
   stop_spinner $?
   start_spinner_in_category 'Docker' 'Removing sudo requirements'
